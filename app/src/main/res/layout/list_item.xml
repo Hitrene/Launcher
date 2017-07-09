@@ -14,5 +14,6 @@
     <TextView
         android:id="@+id/item_app_label"
         android:layout_width="fill_parent"
+        android:textAlignment="center"
         android:layout_height="wrap_content" />
 </LinearLayout>
