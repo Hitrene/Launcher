@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -66,7 +67,7 @@ public class AppsListActivity extends Activity {
                 ImageButton appIcon = (ImageButton) convertView.findViewById(R.id.item_app_icon);
                 appIcon.setImageDrawable(apps.get(position).icon);
 
-                appIcon.setOnClickListener(new View.OnClickListener() { //Одинарное нажатаие
+                appIcon.setOnClickListener(new View.OnClickListener() { //Short action
                     @Override
                     public void onClick(View v) {
                         Intent i = manager.getLaunchIntentForPackage(apps.get(position).name.toString());
@@ -74,10 +75,13 @@ public class AppsListActivity extends Activity {
                     }
                 });
 
-                appIcon.setOnLongClickListener(new View.OnLongClickListener() { //Долгое нажатие
+                appIcon.setOnLongClickListener(new View.OnLongClickListener() { //Long action
                     @Override
                     public boolean onLongClick(View v) {
-
+                        Intent intent = new Intent(Intent.ACTION_UNINSTALL_PACKAGE);
+                        intent.setData(Uri.parse("package:" + apps.get(position).name));
+                        intent.putExtra(Intent.EXTRA_RETURN_RESULT, true);
+                        startActivityForResult(intent, 1);
                         return false;
                     }
                 });

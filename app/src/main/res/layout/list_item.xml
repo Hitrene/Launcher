@@ -8,9 +8,8 @@
     <ImageButton
         android:id="@+id/item_app_icon"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="@null"
-        />
+        android:layout_height="fill_parent"
+        android:background="@null" />
 
     <TextView
         android:id="@+id/item_app_label"
