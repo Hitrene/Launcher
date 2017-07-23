@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.R.attr.id;
+import static android.R.attr.imageButtonStyle;
 
 public class AppsListActivity extends Activity {
     private PackageManager manager;
@@ -31,7 +33,6 @@ public class AppsListActivity extends Activity {
 
         loadApps();
         loadListView();
-        addClickListener();
     }
 
     private void loadApps() {
@@ -57,14 +58,29 @@ public class AppsListActivity extends Activity {
         ArrayAdapter<AppDetail> adapter = new ArrayAdapter<AppDetail>(this,
                 R.layout.list_item, apps) {
             @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
+            public View getView(final int position, View convertView, ViewGroup parent) {
                 if (convertView == null) {
                     convertView = getLayoutInflater().inflate(R.layout.list_item, null);
                 }
 
-                ImageView appIcon = (ImageView) convertView.findViewById(R.id.item_app_icon);
+                ImageButton appIcon = (ImageButton) convertView.findViewById(R.id.item_app_icon);
                 appIcon.setImageDrawable(apps.get(position).icon);
 
+                appIcon.setOnClickListener(new View.OnClickListener() { //Одинарное нажатаие
+                    @Override
+                    public void onClick(View v) {
+                        Intent i = manager.getLaunchIntentForPackage(apps.get(position).name.toString());
+                        AppsListActivity.this.startActivity(i);
+                    }
+                });
+
+                appIcon.setOnLongClickListener(new View.OnLongClickListener() { //Долгое нажатие
+                    @Override
+                    public boolean onLongClick(View v) {
+
+                        return false;
+                    }
+                });
                 TextView appLabel = (TextView) convertView.findViewById(R.id.item_app_label);
                 appLabel.setText(apps.get(position).label);
 
@@ -73,16 +89,5 @@ public class AppsListActivity extends Activity {
         };
 
         grid.setAdapter(adapter);
-    }
-
-    private void addClickListener(){
-        grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> av, View v, int pos,
-                                    long id) {
-                Intent i = manager.getLaunchIntentForPackage(apps.get(pos).name.toString());
-                AppsListActivity.this.startActivity(i);
-            }
-        });
     }
 }
