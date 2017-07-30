@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -33,6 +35,7 @@ public class AppsListActivity extends Activity {
         setContentView(R.layout.activity_apps_list);
 
         loadApps();
+/*        addSettingButton();*/
         loadListView();
     }
 
@@ -71,6 +74,10 @@ public class AppsListActivity extends Activity {
                     @Override
                     public void onClick(View v) {
                         Intent i = manager.getLaunchIntentForPackage(apps.get(position).name.toString());
+                        if (i.getPackage().equals("mingorto.launcher")) {
+                            Log.v("Name of Activity", i.getPackage());
+                            i = new Intent(AppsListActivity.this, SettingsList.class);
+                        }
                         AppsListActivity.this.startActivity(i);
                     }
                 });
@@ -85,6 +92,7 @@ public class AppsListActivity extends Activity {
                         return false;
                     }
                 });
+
                 TextView appLabel = (TextView) convertView.findViewById(R.id.item_app_label);
                 appLabel.setText(apps.get(position).label);
 
@@ -94,4 +102,12 @@ public class AppsListActivity extends Activity {
 
         grid.setAdapter(adapter);
     }
+
+/*    private void addSettingButton() {
+        AppDetail settingButton = new AppDetail();
+        settingButton.label = "Synth Launcher Settings";
+        settingButton.icon = getResources().getDrawable(R.drawable.image_001_team);
+
+        apps.add(settingButton);
+    }*/
 }
