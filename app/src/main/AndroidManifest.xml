@@ -23,5 +23,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".SettingsList"/>
+        <activity android:name=".SettingScreens.FirstRow"/>
+        <activity android:name=".SettingScreens.SecondRow"/>
     </application>
 </manifest>

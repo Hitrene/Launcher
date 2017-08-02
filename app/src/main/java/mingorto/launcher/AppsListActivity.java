@@ -35,7 +35,6 @@ public class AppsListActivity extends Activity {
         setContentView(R.layout.activity_apps_list);
 
         loadApps();
-/*        addSettingButton();*/
         loadListView();
     }
 
@@ -72,9 +71,9 @@ public class AppsListActivity extends Activity {
 
                 appIcon.setOnClickListener(new View.OnClickListener() { //Short action
                     @Override
-                    public void onClick(View v) {
+                    public void onClick(View v) { //Установка обчного нажатия
                         Intent i = manager.getLaunchIntentForPackage(apps.get(position).name.toString());
-                        if (i.getPackage().equals("mingorto.launcher")) {
+                        if (i.getPackage().equals("mingorto.launcher")) { //Если кликнул на иконку настроек
                             Log.v("Name of Activity", i.getPackage());
                             i = new Intent(AppsListActivity.this, SettingsList.class);
                         }
@@ -84,7 +83,7 @@ public class AppsListActivity extends Activity {
 
                 appIcon.setOnLongClickListener(new View.OnLongClickListener() { //Long action
                     @Override
-                    public boolean onLongClick(View v) {
+                    public boolean onLongClick(View v) { //Установка долгого нажатия на иконку
                         Intent intent = new Intent(Intent.ACTION_UNINSTALL_PACKAGE);
                         intent.setData(Uri.parse("package:" + apps.get(position).name));
                         intent.putExtra(Intent.EXTRA_RETURN_RESULT, true);
@@ -102,12 +101,4 @@ public class AppsListActivity extends Activity {
 
         grid.setAdapter(adapter);
     }
-
-/*    private void addSettingButton() {
-        AppDetail settingButton = new AppDetail();
-        settingButton.label = "Synth Launcher Settings";
-        settingButton.icon = getResources().getDrawable(R.drawable.image_001_team);
-
-        apps.add(settingButton);
-    }*/
 }
