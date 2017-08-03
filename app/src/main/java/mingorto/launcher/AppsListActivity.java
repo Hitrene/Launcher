@@ -1,7 +1,9 @@
 package mingorto.launcher;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
@@ -12,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -23,19 +26,32 @@ import java.util.List;
 
 import static android.R.attr.id;
 import static android.R.attr.imageButtonStyle;
+import static android.R.attr.searchHintIcon;
+import static mingorto.launcher.SettingScreens.FirstRow.USER_SETTINGS;
+import static mingorto.launcher.SettingScreens.FirstRow.USER_SETTINGS_LAUNCHER_TYPE;
 
 public class AppsListActivity extends Activity {
     private PackageManager manager;
     private List<AppDetail> apps;
     private GridView grid;
+    private SharedPreferences settings;
+    private int menuType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_apps_list);
 
-        loadApps();
-        loadListView();
+        settings = getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE);
+        menuType = settings.getInt(USER_SETTINGS_LAUNCHER_TYPE, 0);
+
+        if (menuType == 1) {
+            setContentView(R.layout.activity_apps_list);
+            loadApps();
+            loadListView();
+        } else if (menuType == 0) {
+            setContentView(R.layout.alternative_apps_list);
+            Button button = (Button) findViewById(R.id.show_apps);
+        }
     }
 
     private void loadApps() {
@@ -57,9 +73,7 @@ public class AppsListActivity extends Activity {
 
     private void loadListView() {
         grid = (GridView) findViewById(R.id.apps_list);
-
-        ArrayAdapter<AppDetail> adapter = new ArrayAdapter<AppDetail>(this,
-                R.layout.list_item, apps) {
+        ArrayAdapter<AppDetail> adapter = new ArrayAdapter<AppDetail>(this, R.layout.list_item, apps) {
             @Override
             public View getView(final int position, View convertView, ViewGroup parent) {
                 if (convertView == null) {
@@ -100,5 +114,10 @@ public class AppsListActivity extends Activity {
         };
 
         grid.setAdapter(adapter);
+    }
+
+    public void show_alt_grid(View v) {
+        v.setClickable(false);
+        v.setVisibility(View.GONE);
     }
 }
