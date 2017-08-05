@@ -15,7 +15,7 @@ import mingorto.launcher.R;
 public class FirstRow extends Activity {
     public static final String USER_SETTINGS = "user_settings";
     public static final String USER_SETTINGS_LAUNCHER_TYPE = "launcher_type";
-    private final String[] launcherType = {"Классический", "Один экран"};
+    private final String[] launcherType = {"Один экран", "Классический"};
     private SharedPreferences settings;
     private SharedPreferences.Editor editor;
     private AlertDialog.Builder alertDialog;

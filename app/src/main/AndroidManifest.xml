@@ -12,7 +12,6 @@
         <activity
             android:name=".AppsListActivity"
             android:label="My Fucking Launcher"
-            android:theme="@android:style/Theme.NoTitleBar"
             android:launchMode="singleTask"
             android:stateNotNeeded="true">
             <intent-filter>

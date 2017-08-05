@@ -1,7 +1,9 @@
 package mingorto.launcher;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -24,9 +26,12 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import mingorto.launcher.SettingScreens.FirstRow;
+
 import static android.R.attr.id;
 import static android.R.attr.imageButtonStyle;
 import static android.R.attr.searchHintIcon;
+import static android.R.attr.start;
 import static mingorto.launcher.SettingScreens.FirstRow.USER_SETTINGS;
 import static mingorto.launcher.SettingScreens.FirstRow.USER_SETTINGS_LAUNCHER_TYPE;
 
@@ -35,22 +40,20 @@ public class AppsListActivity extends Activity {
     private List<AppDetail> apps;
     private GridView grid;
     private SharedPreferences settings;
-    private int menuType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         settings = getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE);
-        menuType = settings.getInt(USER_SETTINGS_LAUNCHER_TYPE, 0);
+        int menuType = settings.getInt(USER_SETTINGS_LAUNCHER_TYPE, 0);
 
-        if (menuType == 1) {
+        if (menuType == 0) {
             setContentView(R.layout.activity_apps_list);
             loadApps();
             loadListView();
-        } else if (menuType == 0) {
+        } else if (menuType == 1) {
             setContentView(R.layout.alternative_apps_list);
-            Button button = (Button) findViewById(R.id.show_apps);
         }
     }
 
@@ -112,12 +115,13 @@ public class AppsListActivity extends Activity {
                 return convertView;
             }
         };
-
         grid.setAdapter(adapter);
     }
 
     public void show_alt_grid(View v) {
         v.setClickable(false);
         v.setVisibility(View.GONE);
+        Intent i = new Intent(AppsListActivity.this, SettingsList.class);
+        startActivity(i);
     }
 }
