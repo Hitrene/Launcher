@@ -17,6 +17,10 @@ import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,10 +33,12 @@ import static mingorto.launcher.SettingScreens.FirstRow.FirstFirstRow.USER_SETTI
 import static mingorto.launcher.SettingScreens.FirstRow.FirstFirstRow.USER_SETTINGS_LAUNCHER_TYPE;
 
 public class OneScreen extends Activity {
+    public static final String ONE_SCREEN_LIST = "ONE_SCREEN_LIST";
     private static PackageManager manager;
     private List<AppDetail> apps;
     private GridView grid;
     private SharedPreferences settings;
+    SharedPreferences.Editor editor;
     int menuType;
 
     @Override
@@ -42,14 +48,14 @@ public class OneScreen extends Activity {
         settings = getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE);
         menuType = settings.getInt(USER_SETTINGS_LAUNCHER_TYPE, 0);
 
-        if (menuType == 0) {
+/*        if (menuType == 0) {*/
             setContentView(R.layout.one_screen);
             loadApps();
             loadListView();
-        } else if (menuType == 1) {
+/*        } else if (menuType == 1) {
             Intent intent = new Intent(OneScreen.this, ClassicMainScreen.class);
             startActivity(intent);
-        }
+        }*/
 
         Log.d("Current screen: ", "you are on one screen menu");
     }
@@ -58,10 +64,10 @@ public class OneScreen extends Activity {
         manager = getPackageManager();
         apps = new ArrayList<AppDetail>();
 
-        Intent i = new Intent(Intent.ACTION_MAIN);
-        i.addCategory(Intent.CATEGORY_LAUNCHER);
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
 
-        List<ResolveInfo> availableActivities = manager.queryIntentActivities(i, 0);
+        List<ResolveInfo> availableActivities = manager.queryIntentActivities(intent, 0);
         for (ResolveInfo ri : availableActivities) {
             AppDetail app = new AppDetail();
             app.label = ri.loadLabel(manager);
@@ -69,6 +75,18 @@ public class OneScreen extends Activity {
             app.icon = ri.activityInfo.loadIcon(manager);
             apps.add(app);
         }
+
+/*        Gson gson = new Gson();
+        String jsonAppList = gson.toJson(apps);
+        Log.d("Tag", "AppList = " + jsonAppList);
+        editor = settings.edit();
+        editor.putString(ONE_SCREEN_LIST, jsonAppList);
+        editor.apply();
+        Type type = new TypeToken<AppDetail>(){}.getType();
+        List<AppDetail> appList = gson.fromJson(settings.getString(ONE_SCREEN_LIST, ""), type);
+        for (int x = 0; x < appList.size(); x++) {
+            Log.d(x + " : ", String.valueOf(appList.get(x).name));
+        }*/
     }
 
     private void loadListView() {
@@ -125,10 +143,5 @@ public class OneScreen extends Activity {
     @Override
     public void onBackPressed() {
 
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        return super.onKeyDown(keyCode, event);
     }
 }

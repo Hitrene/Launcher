@@ -43,17 +43,18 @@ public class ClassicMainScreen extends Activity {
 
         Log.d("Current screen :", "You are on ClassicMainScreen");
 
-        if (menuType == 0) {
+/*        if (menuType == 0) {
             setContentView(R.layout.one_screen);
-        } else if (menuType == 1) {
+        } else if (menuType == 1) {*/
             setContentView(R.layout.classic_screen_home);
-        }
+/*        }*/
     }
 
     public void show_alt_grid(View v) {
         Intent i = new Intent(ClassicMainScreen.this, ClassicAppMenu.class);
-        i.addCategory(Intent.ACTION_MAIN);
         i.addCategory(Intent.CATEGORY_LAUNCHER);
+        i.addCategory(Intent.CATEGORY_HOME);
+        i.addCategory(Intent.CATEGORY_DEFAULT);
         startActivity(i);
         Log.d("Current screen :", "Button on main menu has been pressed");
     }
@@ -61,10 +62,5 @@ public class ClassicMainScreen extends Activity {
     @Override
     public void onBackPressed() {
 
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        return super.onKeyDown(keyCode, event);
     }
 }
