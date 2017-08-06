@@ -9,6 +9,7 @@ import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -46,8 +47,11 @@ public class OneScreen extends Activity {
             loadApps();
             loadListView();
         } else if (menuType == 1) {
-            setContentView(R.layout.classic_screen_home);
+            Intent intent = new Intent(OneScreen.this, ClassicMainScreen.class);
+            startActivity(intent);
         }
+
+        Log.d("Current screen: ", "you are on one screen menu");
     }
 
     private void loadApps() {
@@ -116,5 +120,15 @@ public class OneScreen extends Activity {
         v.setVisibility(View.GONE);
         Intent i = new Intent(OneScreen.this, ClassicMainScreen.class);
         startActivity(i);
+    }
+
+    @Override
+    public void onBackPressed() {
+
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        return super.onKeyDown(keyCode, event);
     }
 }
