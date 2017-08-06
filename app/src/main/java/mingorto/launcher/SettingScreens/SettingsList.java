@@ -1,4 +1,4 @@
-package mingorto.launcher;
+package mingorto.launcher.SettingScreens;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -9,8 +9,8 @@ import android.widget.ListView;
 
 import java.util.ArrayList;
 
-import mingorto.launcher.SettingScreens.FirstRow;
-import mingorto.launcher.SettingScreens.SecondRow;
+import mingorto.launcher.R;
+import mingorto.launcher.SettingScreens.FirstRow.FirstFirstRow;
 
 public class SettingsList extends Activity {
     ListView listView;
@@ -39,7 +39,7 @@ public class SettingsList extends Activity {
     }
 
     public void addActivities() {
-        activities.add(FirstRow.class);
+        activities.add(FirstFirstRow.class);
         activities.add(SecondRow.class);
     }
 }

@@ -1,59 +1,56 @@
-package mingorto.launcher;
+package mingorto.launcher.ClassicScreen;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import mingorto.launcher.SettingScreens.FirstRow;
+import mingorto.launcher.AppDetail;
+import mingorto.launcher.R;
+import mingorto.launcher.SettingScreens.SettingsList;
 
-import static android.R.attr.id;
-import static android.R.attr.imageButtonStyle;
-import static android.R.attr.searchHintIcon;
-import static android.R.attr.start;
-import static mingorto.launcher.SettingScreens.FirstRow.USER_SETTINGS;
-import static mingorto.launcher.SettingScreens.FirstRow.USER_SETTINGS_LAUNCHER_TYPE;
+import static mingorto.launcher.SettingScreens.FirstRow.FirstFirstRow.USER_SETTINGS;
+import static mingorto.launcher.SettingScreens.FirstRow.FirstFirstRow.USER_SETTINGS_LAUNCHER_TYPE;
 
-public class AppsListActivity extends Activity {
-    private PackageManager manager;
-    private List<AppDetail> apps;
+public class ClassicMainScreen extends Activity {
     private GridView grid;
+    private PackageManager manager;
     private SharedPreferences settings;
+    private List<AppDetail> apps;
+    private int menuType;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.classic_screen_home);
 
         settings = getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE);
-        int menuType = settings.getInt(USER_SETTINGS_LAUNCHER_TYPE, 0);
+        menuType = settings.getInt(USER_SETTINGS_LAUNCHER_TYPE, 0);
+
+        Button button = (Button) findViewById(R.id.show_apps);
+        button.setVisibility(View.GONE);
 
         if (menuType == 0) {
-            setContentView(R.layout.activity_apps_list);
+            setContentView(R.layout.one_screen);
+        } else if (menuType == 1) {
+            setContentView(R.layout.classic_screen_home);
             loadApps();
             loadListView();
-        } else if (menuType == 1) {
-            setContentView(R.layout.alternative_apps_list);
         }
     }
 
@@ -61,13 +58,14 @@ public class AppsListActivity extends Activity {
         manager = getPackageManager();
         apps = new ArrayList<AppDetail>();
 
-        Intent i = new Intent(Intent.ACTION_MAIN);
-        i.addCategory(Intent.CATEGORY_LAUNCHER);
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
 
-        List<ResolveInfo> availableActivities = manager.queryIntentActivities(i, 0);
+        List<ResolveInfo> availableActivities = manager.queryIntentActivities(intent, 0);
         for (ResolveInfo ri : availableActivities) {
             AppDetail app = new AppDetail();
             app.label = ri.loadLabel(manager);
+            app.name = ri.loadLabel(manager);
             app.name = ri.activityInfo.packageName;
             app.icon = ri.activityInfo.loadIcon(manager);
             apps.add(app);
@@ -75,7 +73,7 @@ public class AppsListActivity extends Activity {
     }
 
     private void loadListView() {
-        grid = (GridView) findViewById(R.id.apps_list);
+        grid = (GridView) findViewById(R.id.alternative_grid);
         ArrayAdapter<AppDetail> adapter = new ArrayAdapter<AppDetail>(this, R.layout.list_item, apps) {
             @Override
             public View getView(final int position, View convertView, ViewGroup parent) {
@@ -92,9 +90,9 @@ public class AppsListActivity extends Activity {
                         Intent i = manager.getLaunchIntentForPackage(apps.get(position).name.toString());
                         if (i.getPackage().equals("mingorto.launcher")) { //Если кликнул на иконку настроек
                             Log.v("Name of Activity", i.getPackage());
-                            i = new Intent(AppsListActivity.this, SettingsList.class);
+                            i = new Intent(ClassicMainScreen.this, SettingsList.class);
                         }
-                        AppsListActivity.this.startActivity(i);
+                        ClassicMainScreen.this.startActivity(i);
                     }
                 });
 
@@ -119,9 +117,6 @@ public class AppsListActivity extends Activity {
     }
 
     public void show_alt_grid(View v) {
-        v.setClickable(false);
         v.setVisibility(View.GONE);
-        Intent i = new Intent(AppsListActivity.this, SettingsList.class);
-        startActivity(i);
     }
 }

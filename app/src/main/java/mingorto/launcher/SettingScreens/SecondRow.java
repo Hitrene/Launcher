@@ -11,5 +11,4 @@ public class SecondRow extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.second_row);
     }
-
 }

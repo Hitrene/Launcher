@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".AppsListActivity"
+            android:name=".OneScreen.OneScreen"
             android:label="My Fucking Launcher"
             android:launchMode="singleTask"
             android:stateNotNeeded="true">
@@ -21,8 +21,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SettingsList"/>
-        <activity android:name=".SettingScreens.FirstRow"/>
+        <activity android:name=".SettingScreens.SettingsList"/>
         <activity android:name=".SettingScreens.SecondRow"/>
+        <activity android:name=".ClassicScreen.ClassicMainScreen"/>
+        <activity android:name=".SettingScreens.FirstRow.FirstFirstRow"/>
     </application>
 </manifest>
