@@ -32,11 +32,8 @@ public class MainMenu extends Activity {
     private SharedPreferences.Editor editor;
     private PackageManager manager;
     private List<AppDetail> appList;
-    private int menuType;
-    int m;
+
     private GridView grid;
-    private int gridType;
-    private final static String GRID_TYPE = "GRID_TYPE";
 
 
     @Override
@@ -79,7 +76,6 @@ public class MainMenu extends Activity {
             grid = (GridView) findViewById(R.id.apps_list);
         } else {
             grid = (GridView) findViewById(R.id.home_screen);
-            System.out.println("loadList menu type " + m);
         }
         ArrayAdapter<AppDetail> adapter = new ArrayAdapter<AppDetail>(this, R.layout.list_item, appList) {
             @Override

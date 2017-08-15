@@ -26,7 +26,6 @@ public class FirstFirstRow extends Activity {
     private android.content.SharedPreferences.Editor editor;
     private AlertDialog.Builder alertDialog;
     private Context context;
-    private MainMenu mainMenu;
 
     ListView listView;
     private String[] list = {"Тип главного меню", "Лаунчер по умолчанию", "Порядок приложений в списке"};
