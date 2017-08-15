@@ -1,4 +1,4 @@
-package mingorto.launcher.OneScreen;
+package mingorto.launcher;
 
 import android.app.Activity;
 import android.content.Context;
@@ -9,7 +9,6 @@ import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -17,52 +16,49 @@ import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 
-import mingorto.launcher.AppDetail;
-import mingorto.launcher.ClassicScreen.ClassicMainScreen;
-import mingorto.launcher.R;
+import mingorto.launcher.ClassicScreen.ClassicAppMenu;
 import mingorto.launcher.SettingScreens.SettingsList;
 
-import static mingorto.launcher.SettingScreens.FirstRow.FirstFirstRow.USER_SETTINGS;
-import static mingorto.launcher.SettingScreens.FirstRow.FirstFirstRow.USER_SETTINGS_LAUNCHER_TYPE;
+import static mingorto.launcher.FirstFirstRow.FINAL_SETTING;
+import static mingorto.launcher.FirstFirstRow.USER_SETTINGS;
+import static mingorto.launcher.FirstFirstRow.USER_SETTINGS_LAUNCHER_TYPE;
 
-public class OneScreen extends Activity {
-    public static final String ONE_SCREEN_LIST = "ONE_SCREEN_LIST";
-    private static PackageManager manager;
-    private List<AppDetail> apps;
+public class MainMenu extends Activity {
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
+    private PackageManager manager;
+    private List<AppDetail> appList;
+    private int menuType;
+    int m;
     private GridView grid;
-    private SharedPreferences settings;
-    SharedPreferences.Editor editor;
-    int menuType;
+    private int gridType;
+    private final static String GRID_TYPE = "GRID_TYPE";
+
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
 
-        settings = getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE);
-        menuType = settings.getInt(USER_SETTINGS_LAUNCHER_TYPE, 0);
+    @Override
+    public void onStart() {
+        super.onStart();
 
-/*        if (menuType == 0) {*/
-            setContentView(R.layout.one_screen);
-            loadApps();
-            loadListView();
-/*        } else if (menuType == 1) {
-            Intent intent = new Intent(OneScreen.this, ClassicMainScreen.class);
-            startActivity(intent);
-        }*/
+        if (getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).getInt(FINAL_SETTING, 0) == 0)
+            getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).edit().putInt(FINAL_SETTING, R.layout.one_screen).apply();
 
-        Log.d("Current screen: ", "you are on one screen menu");
+        setContentView(getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).getInt(FINAL_SETTING, 0));
+        loadApps();
+        loadListView();
     }
 
     private void loadApps() {
         manager = getPackageManager();
-        apps = new ArrayList<AppDetail>();
+        appList = new ArrayList<AppDetail>();
 
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -73,25 +69,19 @@ public class OneScreen extends Activity {
             app.label = ri.loadLabel(manager);
             app.name = ri.activityInfo.packageName;
             app.icon = ri.activityInfo.loadIcon(manager);
-            apps.add(app);
+            appList.add(app);
         }
-
-/*        Gson gson = new Gson();
-        String jsonAppList = gson.toJson(apps);
-        Log.d("Tag", "AppList = " + jsonAppList);
-        editor = settings.edit();
-        editor.putString(ONE_SCREEN_LIST, jsonAppList);
-        editor.apply();
-        Type type = new TypeToken<AppDetail>(){}.getType();
-        List<AppDetail> appList = gson.fromJson(settings.getString(ONE_SCREEN_LIST, ""), type);
-        for (int x = 0; x < appList.size(); x++) {
-            Log.d(x + " : ", String.valueOf(appList.get(x).name));
-        }*/
     }
 
     private void loadListView() {
-        grid = (GridView) findViewById(R.id.apps_list);
-        ArrayAdapter<AppDetail> adapter = new ArrayAdapter<AppDetail>(this, R.layout.list_item, apps) {
+        if (getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).getInt(USER_SETTINGS_LAUNCHER_TYPE, 0) == 0) {
+            System.out.println("loadList menu type 0");
+            grid = (GridView) findViewById(R.id.apps_list);
+        } else {
+            grid = (GridView) findViewById(R.id.home_screen);
+            System.out.println("loadList menu type " + m);
+        }
+        ArrayAdapter<AppDetail> adapter = new ArrayAdapter<AppDetail>(this, R.layout.list_item, appList) {
             @Override
             public View getView(final int position, View convertView, ViewGroup parent) {
                 if (convertView == null) {
@@ -99,17 +89,17 @@ public class OneScreen extends Activity {
                 }
 
                 ImageButton appIcon = (ImageButton) convertView.findViewById(R.id.item_app_icon);
-                appIcon.setImageDrawable(apps.get(position).icon);
+                appIcon.setImageDrawable(appList.get(position).icon);
 
                 appIcon.setOnClickListener(new View.OnClickListener() { //Short action
                     @Override
                     public void onClick(View v) { //Установка обчного нажатия
-                        Intent i = manager.getLaunchIntentForPackage(apps.get(position).name.toString());
+                        Intent i = manager.getLaunchIntentForPackage(appList.get(position).name.toString());
                         if (i.getPackage().equals("mingorto.launcher")) { //Если кликнул на иконку настроек
                             Log.v("Name of Activity", i.getPackage());
-                            i = new Intent(OneScreen.this, SettingsList.class);
+                            i = new Intent(MainMenu.this, SettingsList.class);
                         }
-                        OneScreen.this.startActivity(i);
+                        MainMenu.this.startActivity(i);
                     }
                 });
 
@@ -117,7 +107,7 @@ public class OneScreen extends Activity {
                     @Override
                     public boolean onLongClick(View v) { //Установка долгого нажатия на иконку
                         Intent intent = new Intent(Intent.ACTION_UNINSTALL_PACKAGE);
-                        intent.setData(Uri.parse("package:" + apps.get(position).name));
+                        intent.setData(Uri.parse("package:" + appList.get(position).name));
                         intent.putExtra(Intent.EXTRA_RETURN_RESULT, true);
                         startActivityForResult(intent, 1);
                         return false;
@@ -125,7 +115,7 @@ public class OneScreen extends Activity {
                 });
 
                 TextView appLabel = (TextView) convertView.findViewById(R.id.item_app_label);
-                appLabel.setText(apps.get(position).label);
+                appLabel.setText(appList.get(position).label);
 
                 return convertView;
             }
@@ -134,14 +124,23 @@ public class OneScreen extends Activity {
     }
 
     public void show_alt_grid(View v) {
-        v.setClickable(false);
-        v.setVisibility(View.GONE);
-        Intent i = new Intent(OneScreen.this, ClassicMainScreen.class);
+        Intent i = new Intent(MainMenu.this, ClassicAppMenu.class);
         startActivity(i);
+        Log.d("Current screen :", "Button on main menu has been pressed");
     }
 
     @Override
     public void onBackPressed() {
 
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    public void onRestart() {
+        super.onRestart();
     }
 }

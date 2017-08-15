@@ -10,7 +10,7 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 import mingorto.launcher.R;
-import mingorto.launcher.SettingScreens.FirstRow.FirstFirstRow;
+import mingorto.launcher.FirstFirstRow;
 
 public class SettingsList extends Activity {
     ListView listView;
