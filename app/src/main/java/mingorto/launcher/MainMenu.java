@@ -6,15 +6,21 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.TextView;
+
+import org.askerov.dynamicgrid.BaseDynamicGridAdapter;
+import org.askerov.dynamicgrid.DynamicGridView;
 
 import java.sql.SQLOutput;
 import java.util.ArrayList;
@@ -23,6 +29,7 @@ import java.util.List;
 import mingorto.launcher.ClassicScreen.ClassicAppMenu;
 import mingorto.launcher.SettingScreens.SettingsList;
 
+import static android.content.ContentValues.TAG;
 import static mingorto.launcher.FirstFirstRow.FINAL_SETTING;
 import static mingorto.launcher.FirstFirstRow.USER_SETTINGS;
 import static mingorto.launcher.FirstFirstRow.USER_SETTINGS_LAUNCHER_TYPE;
@@ -33,7 +40,7 @@ public class MainMenu extends Activity {
     private PackageManager manager;
     private List<AppDetail> appList;
 
-    private GridView grid;
+    public DynamicGridView grid;
 
 
     @Override
@@ -73,11 +80,11 @@ public class MainMenu extends Activity {
     private void loadListView() {
         if (getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).getInt(USER_SETTINGS_LAUNCHER_TYPE, 0) == 0) {
             System.out.println("loadList menu type 0");
-            grid = (GridView) findViewById(R.id.apps_list);
+            grid = (DynamicGridView) findViewById(R.id.apps_list);
         } else {
-            grid = (GridView) findViewById(R.id.home_screen);
+            grid = (DynamicGridView) findViewById(R.id.home_screen);
         }
-        ArrayAdapter<AppDetail> adapter = new ArrayAdapter<AppDetail>(this, R.layout.list_item, appList) {
+        GridViewAdapter adapter = new GridViewAdapter(this, appList, 3) {
             @Override
             public View getView(final int position, View convertView, ViewGroup parent) {
                 if (convertView == null) {
@@ -86,6 +93,9 @@ public class MainMenu extends Activity {
 
                 ImageButton appIcon = (ImageButton) convertView.findViewById(R.id.item_app_icon);
                 appIcon.setImageDrawable(appList.get(position).icon);
+
+                TextView appLabel = (TextView) convertView.findViewById(R.id.item_app_label);
+                appLabel.setText(appList.get(position).label);
 
                 appIcon.setOnClickListener(new View.OnClickListener() { //Short action
                     @Override
@@ -102,22 +112,33 @@ public class MainMenu extends Activity {
                 appIcon.setOnLongClickListener(new View.OnLongClickListener() { //Long action
                     @Override
                     public boolean onLongClick(View v) { //Установка долгого нажатия на иконку
-                        Intent intent = new Intent(Intent.ACTION_UNINSTALL_PACKAGE);
+                        /*Intent intent = new Intent(Intent.ACTION_UNINSTALL_PACKAGE);
                         intent.setData(Uri.parse("package:" + appList.get(position).name));
                         intent.putExtra(Intent.EXTRA_RETURN_RESULT, true);
-                        startActivityForResult(intent, 1);
-                        return false;
+                        startActivityForResult(intent, 1);*/
+                        grid.startEditMode(position);
+                        return true;
                     }
                 });
 
-                TextView appLabel = (TextView) convertView.findViewById(R.id.item_app_label);
-                appLabel.setText(appList.get(position).label);
+                grid.setOnDragListener(new DynamicGridView.OnDragListener() {
+                    @Override
+                    public void onDragStarted(int position) {
+                        Log.d(TAG, "drag started at position " + position);
+                    }
+
+                    @Override
+                    public void onDragPositionsChanged(int oldPosition, int newPosition) {
+                        Log.d(TAG, String.format("drag item position changed from %d to %d", oldPosition, newPosition));
+                    }
+                });
 
                 return convertView;
             }
         };
         grid.setAdapter(adapter);
     }
+
 
     public void show_alt_grid(View v) {
         Intent i = new Intent(MainMenu.this, ClassicAppMenu.class);
@@ -127,7 +148,11 @@ public class MainMenu extends Activity {
 
     @Override
     public void onBackPressed() {
-
+        if (grid.isEditMode()) {
+            grid.stopEditMode();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
