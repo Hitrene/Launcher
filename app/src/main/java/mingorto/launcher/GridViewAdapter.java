@@ -31,6 +31,12 @@ public class GridViewAdapter extends BaseDynamicGridAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
+        ImageButton appIcon = (ImageButton) convertView.findViewById(R.id.item_app_icon);
+        appIcon.setImageDrawable(appList.get(position).icon);
+
+        TextView appLabel = (TextView) convertView.findViewById(R.id.item_app_label);
+        appLabel.setText(appList.get(position).label);
+
         holder.build(appList.get(position).label.toString(), appList.get(position).icon);
         return convertView;
     }
@@ -47,8 +53,6 @@ public class GridViewAdapter extends BaseDynamicGridAdapter {
         void build(String title, Drawable drawable) {
             letterText.setText(title);
             imageButton.setImageDrawable(drawable);
-
-
         }
     }
 }

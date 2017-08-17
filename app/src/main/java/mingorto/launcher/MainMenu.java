@@ -46,6 +46,7 @@ public class MainMenu extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        loadApps();
     }
 
     @Override
@@ -56,7 +57,7 @@ public class MainMenu extends Activity {
             getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).edit().putInt(FINAL_SETTING, R.layout.one_screen).apply();
 
         setContentView(getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).getInt(FINAL_SETTING, 0));
-        loadApps();
+
         loadListView();
     }
 
@@ -130,6 +131,10 @@ public class MainMenu extends Activity {
                     @Override
                     public void onDragPositionsChanged(int oldPosition, int newPosition) {
                         Log.d(TAG, String.format("drag item position changed from %d to %d", oldPosition, newPosition));
+                        AppDetail oldApp = appList.get(oldPosition);
+                        AppDetail newApp = appList.get(newPosition);
+                        appList.set(newPosition, oldApp);
+                        appList.set(oldPosition, newApp);
                     }
                 });
 
