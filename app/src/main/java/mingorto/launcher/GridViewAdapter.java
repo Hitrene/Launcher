@@ -8,16 +8,18 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.google.gson.annotations.SerializedName;
+
 import org.askerov.dynamicgrid.BaseDynamicGridAdapter;
 
 import java.util.List;
 
 public class GridViewAdapter extends BaseDynamicGridAdapter {
-    private List<AppDetail> appList;
+    private transient List<AppDetail> appListGrid;
 
     public GridViewAdapter(Context context, List<AppDetail> items, int columnCount) {
         super(context, items, columnCount);
-        this.appList = items;
+        this.appListGrid = items;
     }
 
     @Override
@@ -32,12 +34,12 @@ public class GridViewAdapter extends BaseDynamicGridAdapter {
         }
 
         ImageButton appIcon = (ImageButton) convertView.findViewById(R.id.item_app_icon);
-        appIcon.setImageDrawable(appList.get(position).icon);
+        appIcon.setImageDrawable(appListGrid.get(position).icon);
 
         TextView appLabel = (TextView) convertView.findViewById(R.id.item_app_label);
-        appLabel.setText(appList.get(position).label);
+        appLabel.setText(appListGrid.get(position).label);
 
-        holder.build(appList.get(position).label.toString(), appList.get(position).icon);
+        holder.build(appListGrid.get(position).label.toString(), appListGrid.get(position).icon);
         return convertView;
     }
 

@@ -10,6 +10,8 @@ import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,9 +21,18 @@ import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
+
 import org.askerov.dynamicgrid.BaseDynamicGridAdapter;
 import org.askerov.dynamicgrid.DynamicGridView;
+import org.json.JSONArray;
 
+import java.lang.reflect.Type;
 import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,11 +45,19 @@ import static mingorto.launcher.FirstFirstRow.FINAL_SETTING;
 import static mingorto.launcher.FirstFirstRow.USER_SETTINGS;
 import static mingorto.launcher.FirstFirstRow.USER_SETTINGS_LAUNCHER_TYPE;
 
-public class MainMenu extends Activity {
+public class MainMenu extends Activity implements ExclusionStrategy {
     private SharedPreferences sharedPreferences;
     private SharedPreferences.Editor editor;
     private PackageManager manager;
-    private List<AppDetail> appList;
+
+    @SerializedName("appList")
+    private static List<AppDetail> appList;
+
+    public static final String TAG = "ARRAY_LIST";
+    public static final String CONDITION = "Activity condition : ";
+    public static final String ONE_SCREEN_ACTIVITY = "ONE_SCREEN_ACTIVITY";
+    public static final String CLASSIC_HOME = "CLASSIC_HOME";
+    public static final String CLASSIC_MAIN = "CLASSIC_MAIN";
 
     public DynamicGridView grid;
 
@@ -46,12 +65,24 @@ public class MainMenu extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        loadApps();
+
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        appList = getArrayList();
+
+        if (appList == null || appList.isEmpty()) {
+            Log.v(CONDITION, "OUT");
+            loadApps();
+        }
     }
 
     @Override
     public void onStart() {
         super.onStart();
+
+        System.out.println(getArrayList());
+        System.out.println("");
+        System.out.println(appList);
 
         if (getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).getInt(FINAL_SETTING, 0) == 0)
             getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).edit().putInt(FINAL_SETTING, R.layout.one_screen).apply();
@@ -59,6 +90,8 @@ public class MainMenu extends Activity {
         setContentView(getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).getInt(FINAL_SETTING, 0));
 
         loadListView();
+
+        Log.v(CONDITION, "On Start");
     }
 
     private void loadApps() {
@@ -155,6 +188,7 @@ public class MainMenu extends Activity {
     public void onBackPressed() {
         if (grid.isEditMode()) {
             grid.stopEditMode();
+            saveArrayList(appList);
         } else {
             super.onBackPressed();
         }
@@ -162,11 +196,74 @@ public class MainMenu extends Activity {
 
     @Override
     public void onStop() {
+        saveArrayList(appList);
+        Log.v(CONDITION, "On Stop");
         super.onStop();
+
     }
 
     @Override
     public void onRestart() {
+        Log.v(CONDITION, "On Restart");
+/*        saveArrayList(MainMenu.this, appList);*/
         super.onRestart();
+    }
+
+    @Override
+    public void onDestroy() {
+        saveArrayList(appList);
+        Log.v(CONDITION, "On Restart");
+        super.onDestroy();
+    }
+
+    public void saveArrayList(List<AppDetail> list) {
+        SharedPreferences sharedPreferences = this.getSharedPreferences(ONE_SCREEN_ACTIVITY,Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        Exclude ex = new Exclude();
+        Gson gson = new GsonBuilder().addDeserializationExclusionStrategy(ex).addSerializationExclusionStrategy(ex).create();
+/*        Gson gson = new Gson();*/
+        String json = gson.toJson(list);
+        editor.putString(ONE_SCREEN_ACTIVITY, json);
+        editor.apply();
+    }
+
+    public List<AppDetail> getArrayList() {
+        SharedPreferences sharedPreferences = this.getSharedPreferences(ONE_SCREEN_ACTIVITY,Context.MODE_PRIVATE);
+/*        Gson gson = new Gson();*/
+        Exclude ex = new Exclude();
+        Gson gson = new GsonBuilder().addDeserializationExclusionStrategy(ex).addSerializationExclusionStrategy(ex).create();
+        String json = sharedPreferences.getString(ONE_SCREEN_ACTIVITY, null);
+        Type type = new TypeToken<ArrayList<AppDetail>>() {}.getType();
+        return gson.fromJson(json, type);
+    }
+
+    @Override
+    public boolean shouldSkipClass(Class<?> arg0) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean shouldSkipField(FieldAttributes field) {
+        SerializedName ns = field.getAnnotation(SerializedName.class);
+        if(ns != null)
+            return false;
+        return true;
+    }
+
+    class Exclude implements ExclusionStrategy {
+        @Override
+        public boolean shouldSkipClass(Class<?> arg0) {
+            // TODO Auto-generated method stub
+            return false;
+        }
+
+        @Override
+        public boolean shouldSkipField(FieldAttributes field) {
+            SerializedName ns = field.getAnnotation(SerializedName.class);
+            if(ns != null)
+                return false;
+            return true;
+        }
     }
 }
