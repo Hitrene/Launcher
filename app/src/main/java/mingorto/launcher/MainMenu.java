@@ -50,7 +50,6 @@ public class MainMenu extends Activity implements ExclusionStrategy {
     private SharedPreferences.Editor editor;
     private PackageManager manager;
 
-    @SerializedName("appList")
     private static List<AppDetail> appList;
 
     public static final String TAG = "ARRAY_LIST";
@@ -61,18 +60,18 @@ public class MainMenu extends Activity implements ExclusionStrategy {
 
     public DynamicGridView grid;
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.v(CONDITION, "On Create");
 
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
         appList = getArrayList();
-
         if (appList == null || appList.isEmpty()) {
-            Log.v(CONDITION, "OUT");
+            Log.v("LIST CONDITION", "OUT");
             loadApps();
+        } else {
+            Log.v("LIST CONDITION", "FULL");
+            Log.v("List CONDITION", String.valueOf(appList));
         }
     }
 
@@ -80,17 +79,13 @@ public class MainMenu extends Activity implements ExclusionStrategy {
     public void onStart() {
         super.onStart();
 
-        System.out.println(getArrayList());
-        System.out.println("");
-        System.out.println(appList);
-
-        if (getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).getInt(FINAL_SETTING, 0) == 0)
+        if (getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).getInt(FINAL_SETTING, 0) == 0) {
             getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).edit().putInt(FINAL_SETTING, R.layout.one_screen).apply();
+        }
 
         setContentView(getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).getInt(FINAL_SETTING, 0));
 
         loadListView();
-
         Log.v(CONDITION, "On Start");
     }
 
@@ -199,7 +194,6 @@ public class MainMenu extends Activity implements ExclusionStrategy {
         saveArrayList(appList);
         Log.v(CONDITION, "On Stop");
         super.onStop();
-
     }
 
     @Override
@@ -212,29 +206,78 @@ public class MainMenu extends Activity implements ExclusionStrategy {
     @Override
     public void onDestroy() {
         saveArrayList(appList);
-        Log.v(CONDITION, "On Restart");
+        Log.v(CONDITION, "On Destroy");
         super.onDestroy();
     }
 
+    @Override
+    public void onPause() {
+        saveArrayList(appList);
+        Log.v(CONDITION, "On Pause");
+        super.onPause();
+    }
+
     public void saveArrayList(List<AppDetail> list) {
-        SharedPreferences sharedPreferences = this.getSharedPreferences(ONE_SCREEN_ACTIVITY,Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = this.getSharedPreferences(ONE_SCREEN_ACTIVITY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         Exclude ex = new Exclude();
         Gson gson = new GsonBuilder().addDeserializationExclusionStrategy(ex).addSerializationExclusionStrategy(ex).create();
-/*        Gson gson = new Gson();*/
-        String json = gson.toJson(list);
+        manager = getPackageManager();
+
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+        ArrayList<String> list1 = new ArrayList<>();
+        for (AppDetail app : appList) {
+            list1.add(app.label.toString());
+        }
+        String json = gson.toJson(list1);
+        System.out.println(json);
         editor.putString(ONE_SCREEN_ACTIVITY, json);
         editor.apply();
     }
 
     public List<AppDetail> getArrayList() {
-        SharedPreferences sharedPreferences = this.getSharedPreferences(ONE_SCREEN_ACTIVITY,Context.MODE_PRIVATE);
-/*        Gson gson = new Gson();*/
+        SharedPreferences sharedPreferences = this.getSharedPreferences(ONE_SCREEN_ACTIVITY, Context.MODE_PRIVATE);
         Exclude ex = new Exclude();
         Gson gson = new GsonBuilder().addDeserializationExclusionStrategy(ex).addSerializationExclusionStrategy(ex).create();
         String json = sharedPreferences.getString(ONE_SCREEN_ACTIVITY, null);
-        Type type = new TypeToken<ArrayList<AppDetail>>() {}.getType();
-        return gson.fromJson(json, type);
+
+        System.out.println(json);
+
+        Type type = new TypeToken<ArrayList<String>>() {}.getType();
+        manager = getPackageManager();
+
+        ArrayList<String> gsonList = gson.fromJson(json, type);
+
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+        ArrayList<AppDetail> resultList = new ArrayList<>();
+
+        List<ResolveInfo> availableActivities = manager.queryIntentActivities(intent, 0);
+        if (gsonList != null) {
+            System.out.println("WTF");
+            for (String app : gsonList) {
+                for (ResolveInfo ri : availableActivities) {
+                    if (app.equals(ri.loadLabel(manager))) {
+                        AppDetail appInfo = new AppDetail();
+
+                        appInfo.label = ri.loadLabel(manager);
+                        System.out.println("JSON app label " + appInfo.label);
+                        System.out.println("List name " + ri.loadLabel(manager));
+
+                        appInfo.name = ri.activityInfo.packageName;
+                        appInfo.icon = ri.activityInfo.loadIcon(manager);
+                        resultList.add(appInfo);
+                    }
+                }
+            }
+        }
+
+        System.out.println(resultList);
+
+        return resultList;
     }
 
     @Override
@@ -246,7 +289,7 @@ public class MainMenu extends Activity implements ExclusionStrategy {
     @Override
     public boolean shouldSkipField(FieldAttributes field) {
         SerializedName ns = field.getAnnotation(SerializedName.class);
-        if(ns != null)
+        if (ns != null)
             return false;
         return true;
     }
@@ -261,7 +304,7 @@ public class MainMenu extends Activity implements ExclusionStrategy {
         @Override
         public boolean shouldSkipField(FieldAttributes field) {
             SerializedName ns = field.getAnnotation(SerializedName.class);
-            if(ns != null)
+            if (ns != null)
                 return false;
             return true;
         }
