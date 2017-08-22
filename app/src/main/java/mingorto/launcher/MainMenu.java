@@ -6,18 +6,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.graphics.drawable.Drawable;
-import android.media.Image;
-import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -28,19 +20,15 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 
-import org.askerov.dynamicgrid.BaseDynamicGridAdapter;
 import org.askerov.dynamicgrid.DynamicGridView;
-import org.json.JSONArray;
 
 import java.lang.reflect.Type;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 
 import mingorto.launcher.ClassicScreen.ClassicAppMenu;
 import mingorto.launcher.SettingScreens.SettingsList;
 
-import static android.content.ContentValues.TAG;
 import static mingorto.launcher.FirstFirstRow.FINAL_SETTING;
 import static mingorto.launcher.FirstFirstRow.USER_SETTINGS;
 import static mingorto.launcher.FirstFirstRow.USER_SETTINGS_LAUNCHER_TYPE;
@@ -57,6 +45,8 @@ public class MainMenu extends Activity implements ExclusionStrategy {
     public static final String ONE_SCREEN_ACTIVITY = "ONE_SCREEN_ACTIVITY";
     public static final String CLASSIC_HOME = "CLASSIC_HOME";
     public static final String CLASSIC_MAIN = "CLASSIC_MAIN";
+    private int menuType;
+    private String userSettings;
 
     public DynamicGridView grid;
 
@@ -65,14 +55,7 @@ public class MainMenu extends Activity implements ExclusionStrategy {
         super.onCreate(savedInstanceState);
         Log.v(CONDITION, "On Create");
 
-        appList = getArrayList();
-        if (appList == null || appList.isEmpty()) {
-            Log.v("LIST CONDITION", "OUT");
-            loadApps();
-        } else {
-            Log.v("LIST CONDITION", "FULL");
-            Log.v("List CONDITION", String.valueOf(appList));
-        }
+
     }
 
     @Override
@@ -83,7 +66,25 @@ public class MainMenu extends Activity implements ExclusionStrategy {
             getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).edit().putInt(FINAL_SETTING, R.layout.one_screen).apply();
         }
 
-        setContentView(getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).getInt(FINAL_SETTING, 0));
+        menuType = getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).getInt(FINAL_SETTING, 0);
+        setContentView(menuType);
+
+        if (getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).getInt(USER_SETTINGS_LAUNCHER_TYPE, 0) == 0) {
+            userSettings = ONE_SCREEN_ACTIVITY;
+            grid = (DynamicGridView) findViewById(R.id.apps_list);
+        } else {
+            userSettings = CLASSIC_HOME;
+            grid = (DynamicGridView) findViewById(R.id.home_screen);
+        }
+
+        appList = getArrayList();
+        if (appList == null || appList.isEmpty()) {
+            Log.v("LIST CONDITION", "OUT");
+            loadApps();
+        } else {
+            Log.v("LIST CONDITION", "FULL");
+            Log.v("List CONDITION", String.valueOf(appList));
+        }
 
         loadListView();
         Log.v(CONDITION, "On Start");
@@ -107,12 +108,6 @@ public class MainMenu extends Activity implements ExclusionStrategy {
     }
 
     private void loadListView() {
-        if (getSharedPreferences(USER_SETTINGS, Context.MODE_PRIVATE).getInt(USER_SETTINGS_LAUNCHER_TYPE, 0) == 0) {
-            System.out.println("loadList menu type 0");
-            grid = (DynamicGridView) findViewById(R.id.apps_list);
-        } else {
-            grid = (DynamicGridView) findViewById(R.id.home_screen);
-        }
         GridViewAdapter adapter = new GridViewAdapter(this, appList, 3) {
             @Override
             public View getView(final int position, View convertView, ViewGroup parent) {
@@ -218,7 +213,7 @@ public class MainMenu extends Activity implements ExclusionStrategy {
     }
 
     public void saveArrayList(List<AppDetail> list) {
-        SharedPreferences sharedPreferences = this.getSharedPreferences(ONE_SCREEN_ACTIVITY, Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = this.getSharedPreferences(userSettings, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         Exclude ex = new Exclude();
         Gson gson = new GsonBuilder().addDeserializationExclusionStrategy(ex).addSerializationExclusionStrategy(ex).create();
@@ -233,15 +228,15 @@ public class MainMenu extends Activity implements ExclusionStrategy {
         }
         String json = gson.toJson(list1);
         System.out.println(json);
-        editor.putString(ONE_SCREEN_ACTIVITY, json);
+        editor.putString(userSettings, json);
         editor.apply();
     }
 
     public List<AppDetail> getArrayList() {
-        SharedPreferences sharedPreferences = this.getSharedPreferences(ONE_SCREEN_ACTIVITY, Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = this.getSharedPreferences(userSettings, Context.MODE_PRIVATE);
         Exclude ex = new Exclude();
         Gson gson = new GsonBuilder().addDeserializationExclusionStrategy(ex).addSerializationExclusionStrategy(ex).create();
-        String json = sharedPreferences.getString(ONE_SCREEN_ACTIVITY, null);
+        String json = sharedPreferences.getString(userSettings, null);
 
         System.out.println(json);
 
@@ -264,9 +259,6 @@ public class MainMenu extends Activity implements ExclusionStrategy {
                         AppDetail appInfo = new AppDetail();
 
                         appInfo.label = ri.loadLabel(manager);
-                        System.out.println("JSON app label " + appInfo.label);
-                        System.out.println("List name " + ri.loadLabel(manager));
-
                         appInfo.name = ri.activityInfo.packageName;
                         appInfo.icon = ri.activityInfo.loadIcon(manager);
                         resultList.add(appInfo);
@@ -276,7 +268,6 @@ public class MainMenu extends Activity implements ExclusionStrategy {
         }
 
         System.out.println(resultList);
-
         return resultList;
     }
 
