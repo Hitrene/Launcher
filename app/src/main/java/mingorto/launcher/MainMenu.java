@@ -34,8 +34,6 @@ import static mingorto.launcher.FirstFirstRow.USER_SETTINGS;
 import static mingorto.launcher.FirstFirstRow.USER_SETTINGS_LAUNCHER_TYPE;
 
 public class MainMenu extends Activity implements ExclusionStrategy {
-    private SharedPreferences sharedPreferences;
-    private SharedPreferences.Editor editor;
     private PackageManager manager;
 
     private static List<AppDetail> appList;
@@ -167,7 +165,6 @@ public class MainMenu extends Activity implements ExclusionStrategy {
         grid.setAdapter(adapter);
     }
 
-
     public void show_alt_grid(View v) {
         Intent i = new Intent(MainMenu.this, ClassicAppMenu.class);
         startActivity(i);
@@ -273,7 +270,6 @@ public class MainMenu extends Activity implements ExclusionStrategy {
 
     @Override
     public boolean shouldSkipClass(Class<?> arg0) {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -288,7 +284,6 @@ public class MainMenu extends Activity implements ExclusionStrategy {
     class Exclude implements ExclusionStrategy {
         @Override
         public boolean shouldSkipClass(Class<?> arg0) {
-            // TODO Auto-generated method stub
             return false;
         }
 
